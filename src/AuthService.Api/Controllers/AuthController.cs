@@ -36,6 +36,7 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
             platform,
             mobile
         });
+        
         var (token,refresh)=await service.LoginAsync(req,dev);
         Response.Cookies.Append("refreshToken",refresh,new CookieOptions{
             HttpOnly=true,Secure=secure,SameSite=SameSiteMode.Strict,
