@@ -15,17 +15,15 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
 
     [HttpPost("register")] [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterRequest req){
-        var ua = Request.Headers.UserAgent.ToString();
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-        var dev =Guid.NewGuid().ToString();
-        var token=await service.RegisterAsync(req,dev);
+        var token=await service.RegisterAsync(req);
 
         return Ok(token);
     }
     [HttpPost("login")] [AllowAnonymous]
     public async Task<IActionResult> Login(LoginRequest req){
-        var dev=Guid.NewGuid().ToString();
+        var dev=Request.Headers["X-Device-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+        var info=Request.Headers["X-Device-Info"].FirstOrDefault();
+        req = req with { DeviceInfo = req.DeviceInfo ?? info };
         var (token,refresh)=await service.LoginAsync(req,dev);
         Response.Cookies.Append("refreshToken",refresh,new CookieOptions{
             HttpOnly=true,Secure=secure,SameSite=SameSiteMode.Strict,
@@ -36,7 +34,7 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
     [HttpPost("refresh")] [AllowAnonymous]
     public async Task<IActionResult> Refresh(){
         if(!Request.Cookies.TryGetValue("refreshToken",out var combined)) return Unauthorized();
-        var dev=Guid.NewGuid().ToString();
+        var dev=Request.Headers["X-Device-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
         var token=await service.RefreshAsync(combined!,dev);
         return Ok(token);
     }

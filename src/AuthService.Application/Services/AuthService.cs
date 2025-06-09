@@ -17,7 +17,7 @@ public class AuthService(IUserRepository users,
     private readonly int accessMinutes = int.Parse(cfg["Jwt:TokenExpireMinutes"] ?? "15");
     private readonly int refreshDays = int.Parse(cfg["Jwt:RefreshTokenExpireDays"] ?? "7");
 
-    public async Task<TokenResponse> RegisterAsync(RegisterRequest req,string deviceId)
+    public async Task<TokenResponse> RegisterAsync(RegisterRequest req)
     {
         if(await users.GetByEmailAsync(req.Email) is not null)
             throw new InvalidOperationException("Email exists");
@@ -25,9 +25,7 @@ public class AuthService(IUserRepository users,
         user.Roles.Add("Client");
         await users.AddAsync(user);
         await users.SaveChangesAsync();
-        var (_,plain) = await IssueRefresh(user,deviceId,req.DeviceInfo);
-        // cookie set outside
-        var access = jwt.CreateAccessToken(user,deviceId);
+        var access = jwt.CreateAccessToken(user,Guid.NewGuid().ToString());
         return new TokenResponse(access, accessMinutes*60);
     }
 
@@ -49,7 +47,7 @@ public class AuthService(IUserRepository users,
         stored.Revoked=true;
         await tokens.SaveChangesAsync();
         var user = stored.User!;
-        await IssueRefresh(user,deviceId,stored.DeviceId);
+        await IssueRefresh(user,deviceId,stored.DeviceInfo);
         var access = jwt.CreateAccessToken(user,deviceId);
         return new TokenResponse(access,accessMinutes*60);
     }
@@ -68,7 +66,11 @@ public class AuthService(IUserRepository users,
         var salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
         var hash = Hash(plain,salt);
         var token = new RefreshToken{
-            TokenHash=hash, Salt=salt, DeviceId=deviceId, ExpiresAt=DateTime.UtcNow.AddDays(refreshDays),
+            TokenHash=hash,
+            Salt=salt,
+            DeviceId=deviceId,
+            DeviceInfo=info,
+            ExpiresAt=DateTime.UtcNow.AddDays(refreshDays),
             UserId=user.Id
         };
         await tokens.AddAsync(token);
