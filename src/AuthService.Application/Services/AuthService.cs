@@ -4,6 +4,7 @@ using System.Text;
 using AuthService.Application.DTOs;
 using AuthService.Application.Interfaces;
 using AuthService.Domain.Entities;
+using Microsoft.Extensions.Configuration;
 
 namespace AuthService.Application.Services;
 
