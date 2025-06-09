@@ -1,6 +1,7 @@
 
 using AuthService.Application.DTOs;
 using AuthService.Application.Interfaces;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,7 +25,18 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
         var agent = Request.Headers["User-Agent"].FirstOrDefault() ?? "unknown";
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         var lang = Request.Headers["Accept-Language"].FirstOrDefault() ?? "unknown";
-        req.DeviceInfo = $"agent:{agent};ip:{ip};lang:{lang}";
+        var secUa = Request.Headers["sec-ch-ua"].FirstOrDefault() ?? "unknown";
+        var platform = Request.Headers["sec-ch-ua-platform"].FirstOrDefault() ?? "unknown";
+        var mobile = Request.Headers["sec-ch-ua-mobile"].FirstOrDefault() ?? "unknown";
+        req.DeviceInfo = JsonSerializer.Serialize(new {
+            agent,
+            ip,
+            lang,
+            secUa,
+            platform,
+            mobile
+        });
+        
         var (token,refresh)=await service.LoginAsync(req,dev);
         Response.Cookies.Append("refreshToken",refresh,new CookieOptions{
             HttpOnly=true,Secure=secure,SameSite=SameSiteMode.Strict,
