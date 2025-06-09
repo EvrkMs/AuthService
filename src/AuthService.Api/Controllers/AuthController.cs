@@ -20,9 +20,11 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
     }
     [HttpPost("login")] [AllowAnonymous]
     public async Task<IActionResult> Login(LoginRequest req){
-        var dev=Request.Headers["X-Device-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
-        var agent=Request.Headers["User-Agent"].FirstOrDefault();
-        req = req with { DeviceInfo = agent };
+        var dev = Request.Headers["X-Device-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
+        var agent = Request.Headers["User-Agent"].FirstOrDefault() ?? "unknown";
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var lang = Request.Headers["Accept-Language"].FirstOrDefault() ?? "unknown";
+        req.DeviceInfo = $"agent:{agent};ip:{ip};lang:{lang}";
         var (token,refresh)=await service.LoginAsync(req,dev);
         Response.Cookies.Append("refreshToken",refresh,new CookieOptions{
             HttpOnly=true,Secure=secure,SameSite=SameSiteMode.Strict,
