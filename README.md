@@ -1,5 +1,5 @@
 
-# AuthService (.NET 9, stable)
+# AuthService (.NET 8)
 
 ## Запуск
 ```bash
