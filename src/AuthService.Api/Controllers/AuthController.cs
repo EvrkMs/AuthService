@@ -21,8 +21,8 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
     [HttpPost("login")] [AllowAnonymous]
     public async Task<IActionResult> Login(LoginRequest req){
         var dev=Request.Headers["X-Device-Id"].FirstOrDefault() ?? Guid.NewGuid().ToString();
-        var info=Request.Headers["X-Device-Info"].FirstOrDefault();
-        req = req with { DeviceInfo = req.DeviceInfo ?? info };
+        var agent=Request.Headers["User-Agent"].FirstOrDefault();
+        req = req with { DeviceInfo = agent };
         var (token,refresh)=await service.LoginAsync(req,dev);
         Response.Cookies.Append("refreshToken",refresh,new CookieOptions{
             HttpOnly=true,Secure=secure,SameSite=SameSiteMode.Strict,
