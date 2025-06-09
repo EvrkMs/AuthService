@@ -8,7 +8,7 @@ namespace AuthService.Infrastructure.Repositories;
 
 public class UserRepository(AuthDbContext db): IUserRepository
 {
-    public Task<User?> GetByEmailAsync(string email)=> db.Users.FirstOrDefaultAsync(u=>u.Email==email);
+    public Task<User?> GetByPhoneAsync(string phone)=> db.Users.FirstOrDefaultAsync(u=>u.Phone==phone);
     public Task AddAsync(User user)=> db.Users.AddAsync(user).AsTask();
     public Task SaveChangesAsync()=> db.SaveChangesAsync();
 }

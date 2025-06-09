@@ -1,1 +1,1 @@
-namespace AuthService.Application.DTOs; public record LoginRequest(string Email,string Password,string? DeviceInfo);
+namespace AuthService.Application.DTOs; public record LoginRequest(string Phone,string Password,string? DeviceInfo);
