@@ -12,8 +12,11 @@ using System.Security.Cryptography;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddDbContext<AuthDbContext>(opt=>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<AuthDbContext>(opt =>
+    opt.UseNpgsql(
+        builder.Configuration.GetConnectionString("Default"),
+        npg => npg.MigrationsAssembly("AuthService.Infrastructure")));
+
 
 builder.Services.AddScoped<IUserRepository,UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();

@@ -15,8 +15,12 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
 
     [HttpPost("register")] [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterRequest req){
-        var dev=Guid.NewGuid().ToString();
+        var ua = Request.Headers.UserAgent.ToString();
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        var dev =Guid.NewGuid().ToString();
         var token=await service.RegisterAsync(req,dev);
+
         return Ok(token);
     }
     [HttpPost("login")] [AllowAnonymous]
