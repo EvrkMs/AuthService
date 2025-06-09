@@ -1,0 +1,1 @@
+namespace AuthService.Application.DTOs; public record TokenResponse(string AccessToken,int ExpiresInSeconds);

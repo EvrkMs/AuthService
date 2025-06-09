@@ -1,0 +1,18 @@
+
+version: "3.9"
+services:
+  auth:
+    build: .
+    ports: ["5000:80"]
+    environment:
+      ConnectionStrings__Default: Host=db;Port=5432;Database=AuthServiceDb;Username=postgres;Password=StrongPassword
+    volumes: ["./keys:/app/keys"]
+    depends_on: [db]
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: StrongPassword
+      POSTGRES_DB: AuthServiceDb
+    volumes: ["pg:/var/lib/postgresql/data"]
+volumes: { pg: }
