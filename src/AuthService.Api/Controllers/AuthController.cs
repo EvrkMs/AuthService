@@ -15,9 +15,8 @@ public class AuthController(IAuthService service,IConfiguration cfg): Controller
 
     [HttpPost("register")] [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterRequest req){
-        var token=await service.RegisterAsync(req);
-
-        return Ok(token);
+        await service.RegisterAsync(req);
+        return Ok();
     }
     [HttpPost("login")] [AllowAnonymous]
     public async Task<IActionResult> Login(LoginRequest req){

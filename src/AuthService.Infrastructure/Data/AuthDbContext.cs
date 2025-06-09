@@ -27,7 +27,7 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> opts) : DbContext(opt
         modelBuilder.Entity<User>(b =>
         {
             b.HasKey(u => u.Id);
-            b.HasIndex(u => u.Email).IsUnique();
+            b.HasIndex(u => u.Phone).IsUnique();
 
             b.Property(u => u.Roles)
              .HasConversion(rolesConverter)

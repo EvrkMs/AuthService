@@ -17,21 +17,21 @@ public class AuthService(IUserRepository users,
     private readonly int accessMinutes = int.Parse(cfg["Jwt:TokenExpireMinutes"] ?? "15");
     private readonly int refreshDays = int.Parse(cfg["Jwt:RefreshTokenExpireDays"] ?? "7");
 
-    public async Task<TokenResponse> RegisterAsync(RegisterRequest req)
+    public async Task RegisterAsync(RegisterRequest req)
     {
-        if(await users.GetByEmailAsync(req.Email) is not null)
-            throw new InvalidOperationException("Email exists");
-        var user = new User{Email=req.Email,PasswordHash=hasher.Hash(req.Password)};
+        if(!System.Text.RegularExpressions.Regex.IsMatch(req.Phone, "^(?:\\+7|8)\\d{10}$"))
+            throw new InvalidOperationException("Bad phone format");
+        if(await users.GetByPhoneAsync(req.Phone) is not null)
+            throw new InvalidOperationException("Phone exists");
+        var user = new User{Phone=req.Phone,PasswordHash=hasher.Hash(req.Password)};
         user.Roles.Add("Client");
         await users.AddAsync(user);
         await users.SaveChangesAsync();
-        var access = jwt.CreateAccessToken(user,Guid.NewGuid().ToString());
-        return new TokenResponse(access, accessMinutes*60);
     }
 
     public async Task<(TokenResponse,string)> LoginAsync(LoginRequest req,string deviceId)
     {
-        var user = await users.GetByEmailAsync(req.Email) ?? throw new InvalidOperationException("Bad creds");
+        var user = await users.GetByPhoneAsync(req.Phone) ?? throw new InvalidOperationException("Bad creds");
         if(!hasher.Verify(req.Password,user.PasswordHash)) throw new InvalidOperationException("Bad creds");
         var (_,plain) = await IssueRefresh(user,deviceId,req.DeviceInfo);
         var access = jwt.CreateAccessToken(user,deviceId);
