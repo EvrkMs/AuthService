@@ -7,6 +7,7 @@ public class RefreshToken
     public required string TokenHash { get; set; }
     public required string Salt { get; set; }
     public required string DeviceId { get; set; }
+    public string? DeviceInfo { get; set; }
     public DateTime ExpiresAt { get; set; }
     public bool Revoked { get; set; }
     public Guid UserId { get; set; }
