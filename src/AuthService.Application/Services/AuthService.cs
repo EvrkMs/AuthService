@@ -60,6 +60,29 @@ public class AuthService(IUserRepository users,
         if(stored!=null){ stored.Revoked=true; await tokens.SaveChangesAsync();}
     }
 
+    public async Task<IEnumerable<SessionDto>> GetActiveSessionsAsync(Guid userId)
+    {
+        var list = await tokens.GetByUserIdAsync(userId);
+        return list.Where(t=>!t.Revoked)
+                   .Select(t=>new SessionDto(t.Id,t.DeviceId,t.DeviceInfo,t.ExpiresAt));
+    }
+
+    public async Task RevokeAllSessionsAsync(Guid userId)
+    {
+        var list = await tokens.GetByUserIdAsync(userId);
+        foreach(var t in list) t.Revoked=true;
+        await tokens.SaveChangesAsync();
+    }
+
+    public async Task ChangePasswordAsync(Guid userId,string oldPassword,string newPassword)
+    {
+        var user = await users.GetByIdAsync(userId) ?? throw new InvalidOperationException("User not found");
+        if(!hasher.Verify(oldPassword,user.PasswordHash)) throw new InvalidOperationException("Bad creds");
+        user.PasswordHash = hasher.Hash(newPassword);
+        await users.SaveChangesAsync();
+        await RevokeAllSessionsAsync(userId);
+    }
+
     private async Task<(string stored,string plain)> IssueRefresh(User user,string deviceId,string? info)
     {
         var plain = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));

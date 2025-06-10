@@ -11,7 +11,7 @@ namespace AuthService.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController(IAuthService service,IConfiguration cfg): ControllerBase
 {
-    private readonly bool secure= bool.Parse(cfg["COOKIE_SECURE"] ?? "false");
+    private readonly bool secure= cfg.GetValue("COOKIE_SECURE", true);
     private readonly int days = int.Parse(cfg["Jwt:RefreshTokenExpireDays"] ?? "7");
 
     [HttpPost("register")] [AllowAnonymous]
